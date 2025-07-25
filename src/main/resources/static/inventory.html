@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Inventory Management</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet" />
+    <link href="/css/style.css" rel="stylesheet" />
+</head>
+<body>
+<div id="sidebar" aria-label="Sidebar navigation">
+    <h4>POS System</h4>
+    <hr />
+    <ul class="nav flex-column">
+        <li><a href="dashboard.html" class="nav-link text-white"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+        <li><a href="pos.html" class="nav-link text-white"><i class="bi bi-receipt"></i> POS</a></li>
+        <li><a href="customer.html" class="nav-link"><i class="bi bi-people"></i> Customer</a></li>
+        <li><a href="category.html" class="nav-link "><i class="bi bi-tags"></i> Category</a></li>
+        <li><a href="product.html" class="nav-link text-white"><i class="bi bi-box"></i> Product</a></li>
+        <li><a href="inventory.html" class="nav-link text-white active"><i class="bi bi-archive"></i> Inventory</a></li>
+        <li><a href="report.html" class="nav-link text-white"><i class="bi bi-bar-chart"></i> Report</a></li>
+        <li><a href="profile.html" class="nav-link text-white"><i class="bi bi-person"></i> Profile</a></li>
+        <li><a href="register.html" class="nav-link text-white"><i class="bi bi-person-plus"></i> Register</a></li>
+        <li><a href="settings.html" class="nav-link text-white"><i class="bi bi-gear"></i> Settings</a></li>
+    </ul>
+    <hr />
+    <button class="btn btn-danger w-100" id="logoutBtn">Logout</button>
+</div>
+<div id="content" class="container mt-4">
+    <h2>Inventory Management</h2>
+    <form id="inventoryForm" class="mb-4" novalidate>
+        <div class="mb-3">
+            <label for="productSelect" class="form-label">Product</label>
+            <select id="productSelect" class="form-select" required>
+                <option value="">Select Product</option>
+            </select>
+            <div class="invalid-feedback">Please select a product.</div>
+        </div>
+
+        <div class="mb-3">
+            <label for="actionSelect" class="form-label">Action</label>
+            <select id="actionSelect" class="form-select" required>
+                <option value="IN">Stock In</option>
+                <option value="OUT">Stock Out</option>
+            </select>
+            <div class="invalid-feedback">Please select an action.</div>
+        </div>
+
+        <div class="mb-3">
+            <label for="quantityInput" class="form-label">Quantity</label>
+            <input id="quantityInput" type="number" min="1" class="form-control" required />
+            <div class="invalid-feedback">Please enter a valid quantity.</div>
+        </div>
+
+        <div class="mb-3">
+            <label for="descriptionInput" class="form-label">Description (optional)</label>
+            <textarea id="descriptionInput" class="form-control" rows="2"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">Save Inventory</button>
+    </form>
+
+    <hr />
+
+    <h3>Inventory Records</h3>
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+        <tr>
+            <th>ID</th>
+            <th>Product</th>
+            <th>Action</th>
+            <th>Quantity</th>
+            <th>Description</th>
+            <th>Created At</th>
+        </tr>
+        </thead>
+        <tbody id="inventoryTableBody">
+        <tr><td colspan="6" class="text-center py-4">Loading inventory...</td></tr>
+        </tbody>
+    </table>
+</div>
+<script src="/js/sidebar.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+<script>
+    const token = localStorage.getItem('token');
+
+    const productSelect = document.getElementById('productSelect');
+    const actionSelect = document.getElementById('actionSelect');
+    const quantityInput = document.getElementById('quantityInput');
+    const descriptionInput = document.getElementById('descriptionInput');
+    const inventoryForm = document.getElementById('inventoryForm');
+    const inventoryTableBody = document.getElementById('inventoryTableBody');
+
+    async function loadProducts() {
+        try {
+            const res = await fetch('/api/products', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            if (!res.ok) throw new Error('Failed to load products');
+            const products = await res.json();
+
+            productSelect.innerHTML = '<option value="">Select Product</option>';
+            products.forEach(p => {
+                const option = document.createElement('option');
+                option.value = p.id;
+                option.textContent = `${p.name} (Stock: ${p.stock})`;
+                productSelect.appendChild(option);
+            });
+        } catch (err) {
+            Swal.fire('Error', err.message, 'error');
+        }
+    }
+
+    async function loadInventories() {
+        try {
+            const res = await fetch('/api/inventories', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            if (!res.ok) throw new Error('Failed to load inventory');
+            const inventories = await res.json();
+
+            if (inventories.length === 0) {
+                inventoryTableBody.innerHTML = `<tr><td colspan="6" class="text-center">No inventory records found.</td></tr>`;
+                return;
+            }
+
+            inventoryTableBody.innerHTML = inventories.map(inv => `
+        <tr>
+          <td>${inv.id}</td>
+          <td>${inv.product?.name || ''}</td>
+          <td>${inv.action}</td>
+          <td>${inv.quantity}</td>
+          <td>${inv.description || ''}</td>
+          <td>${new Date(inv.createdAt).toLocaleString()}</td>
+        </tr>
+      `).join('');
+        } catch (err) {
+            Swal.fire('Error', err.message, 'error');
+        }
+    }
+
+    inventoryForm.addEventListener('submit', async e => {
+        e.preventDefault();
+
+        // Basic validation
+        if (!productSelect.value) {
+            productSelect.classList.add('is-invalid');
+            return;
+        } else {
+            productSelect.classList.remove('is-invalid');
+        }
+
+        if (!actionSelect.value) {
+            actionSelect.classList.add('is-invalid');
+            return;
+        } else {
+            actionSelect.classList.remove('is-invalid');
+        }
+
+        if (!quantityInput.value || quantityInput.value <= 0) {
+            quantityInput.classList.add('is-invalid');
+            return;
+        } else {
+            quantityInput.classList.remove('is-invalid');
+        }
+
+        const payload = {
+            productId: parseInt(productSelect.value),
+            action: actionSelect.value,
+            quantity: parseInt(quantityInput.value),
+            description: descriptionInput.value.trim()
+        };
+
+        try {
+            const res = await fetch('/api/inventories', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify(payload)
+            });
+            if (!res.ok) {
+                const text = await res.text();
+                throw new Error(text || 'Failed to save inventory');
+            }
+
+            Swal.fire('Success', 'Inventory updated successfully', 'success');
+            inventoryForm.reset();
+            await loadProducts();
+            await loadInventories();
+        } catch (err) {
+            Swal.fire('Error', err.message, 'error');
+        }
+    });
+
+    // Initial load
+    (async () => {
+        await loadProducts();
+        await loadInventories();
+    })();
+</script>
+</body>
+</html>

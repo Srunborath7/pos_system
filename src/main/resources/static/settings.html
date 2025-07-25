@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>User Settings</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+    <link href="/css/style.css" rel="stylesheet" />
+    <style>
+        body {
+            background-color: #f8f9fa;
+            display: flex;
+        }
+        #sidebar {
+            width: 250px;
+            background-color: #343a40;
+            color: #fff;
+            height: 100vh;
+            padding: 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+        #sidebar a {
+            color: #fff;
+            margin-bottom: 10px;
+        }
+        #sidebar a.active {
+            background-color: #495057;
+            border-radius: 4px;
+        }
+        #content {
+            margin-left: 270px;
+            padding: 30px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+<div id="sidebar">
+    <h4>POS Dashboard</h4>
+    <hr />
+    <ul class="nav flex-column">
+        <li><a href="dashboard.html" class="nav-link text-white"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+        <li><a href="pos.html" class="nav-link text-white"><i class="bi bi-receipt"></i> POS</a></li>
+        <li><a href="customer.html" class="nav-link text-white"><i class="bi bi-people"></i> Customer</a></li>
+        <li><a href="category.html" class="nav-link text-white"><i class="bi bi-tags"></i> Category</a></li>
+        <li><a href="product.html" class="nav-link text-white"><i class="bi bi-box"></i> Product</a></li>
+        <li><a href="inventory.html" class="nav-link text-white"><i class="bi bi-archive"></i> Inventory</a></li>
+        <li><a href="report.html" class="nav-link text-white"><i class="bi bi-bar-chart"></i> Report</a></li>
+        <li><a href="profile.html" class="nav-link text-white"><i class="bi bi-person"></i> Profile</a></li>
+        <li><a href="register.html" class="nav-link text-white"><i class="bi bi-person-plus"></i> Register</a></li>
+        <li><a href="settings.html" class="nav-link text-white active"><i class="bi bi-gear"></i> Settings</a></li>
+    </ul>
+    <hr />
+    <button class="btn btn-danger w-100" id="logoutBtn">Logout</button>
+</div>
+
+<div id="content" class="container" style="height: 100vh; display: flex; justify-content: center; align-items: center;">
+    <form id="settingsForm" novalidate class="card p-4 shadow" style="max-width: 800px; width: 100%;">
+        <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" id="username" class="form-control" required />
+            <div class="invalid-feedback">Please enter a username.</div>
+        </div>
+
+        <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" id="email" class="form-control" required />
+            <div class="invalid-feedback">Please enter a valid email.</div>
+        </div>
+
+        <hr />
+        <h5>Change Password</h5>
+        <div class="mb-3">
+            <label for="oldPassword" class="form-label">Current Password</label>
+            <input type="password" id="oldPassword" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label for="newPassword" class="form-label">New Password</label>
+            <input type="password" id="newPassword" class="form-control" />
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">Save Changes</button>
+    </form>
+</div>
+<script src="/js/sidebar.js"></script>
+<script>
+    function parseJwt(token) {
+        try {
+            const base64Payload = token.split('.')[1];
+            const jsonPayload = atob(base64Payload.replace(/-/g, '+').replace(/_/g, '/'));
+            return JSON.parse(jsonPayload);
+        } catch {
+            return null;
+        }
+    }
+
+    async function fetchUserData(token) {
+        const res = await fetch(`/api/users/me`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!res.ok) throw new Error('Failed to fetch user data');
+        return res.json();
+    }
+
+    async function updateUserData(token, data) {
+        const res = await fetch(`/api/users/update`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        const text = await res.text();
+        if (!res.ok) throw new Error(text || 'Failed to update user');
+        return text;
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            alert('Please login first.');
+            window.location.href = '/index.html';
+            return;
+        }
+
+        const payload = parseJwt(token);
+        if (!payload || !payload.sub) {
+            alert('Invalid token, please login again.');
+            localStorage.removeItem('token');
+            window.location.href = '/index.html';
+            return;
+        }
+
+        try {
+            const user = await fetchUserData(token);
+            document.getElementById('username').value = user.username || '';
+            document.getElementById('email').value = user.email || '';
+        } catch (err) {
+            Swal.fire('Error', err.message, 'error');
+        }
+
+        const form = document.getElementById('settingsForm');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (!form.checkValidity()) {
+                form.classList.add('was-validated');
+                return;
+            }
+
+            const updateData = {
+                username: document.getElementById('username').value.trim(),
+                email: document.getElementById('email').value.trim()
+            };
+
+            const oldPassword = document.getElementById('oldPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+
+            if (oldPassword && newPassword) {
+                updateData.oldPassword = oldPassword;
+                updateData.newPassword = newPassword;
+            }
+
+            try {
+                await updateUserData(token, updateData);
+                Swal.fire('Success', 'User settings updated successfully.', 'success');
+                document.getElementById('oldPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                form.classList.remove('was-validated');
+            } catch (err) {
+                Swal.fire('Error', err.message, 'error');
+            }
+        });
+
+        // Logout button handler
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            localStorage.removeItem('token');
+            window.location.href = '/index.html';
+        });
+    });
+</script>
+
+</body>
+</html>
