@@ -2,43 +2,148 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>POS System</title>
+  <title>POS System - Mart</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="/css/style.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
-    body {
-      background-color: #f8f9fa;
+    /* Product Section */
+    #productSection {
+      display: flex;
+      flex-direction: column;
+      height: 90vh; /* fills most vertical space */
+    }
+    #productHeader {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    #productHeader img {
+      width: 50px;
+      height: 50px;
+      object-fit: contain;
+      user-select: none;
+    }
+    #productHeader h4 {
+      margin: 0;
+      font-weight: bold;
+      user-select: none;
+    }
+    #searchInput {
+      margin-bottom: 10px;
+    }
+    #productList {
+      flex-grow: 1;
+      overflow-y: auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      background: white;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+      padding: 10px;
     }
     .product-card {
       cursor: pointer;
-      transition: transform 0.2s ease;
-      border: 1px solid transparent;
       border-radius: 5px;
-      padding: 10px;
-      margin-bottom: 15px;
       background-color: white;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 15px;
+      transition: transform 0.2s ease, border-color 0.2s ease, padding 0.2s ease;
+      height: 250px;
+      box-sizing: border-box;
+      padding: 30px;
+      border: 1px solid #dee2e6;
     }
     .product-card:hover {
       transform: scale(1.02);
-      border: 1px solid #198754;
+      border-color: #20c997;
     }
     .product-image {
+      width: 100%;
+      height: 120px;
+      object-fit: contain;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      background-color: #fff;
+      margin-bottom: 8px;
+    }
+    .product-info {
+      text-align: center;
+      font-size: 0.9rem;
+    }
+    /* Invoice Section */
+    #invoiceSection {
+      display: flex;
+      flex-direction: column;
+      height: 90vh;
+    }
+    #invoiceHeader {
+      text-align: center;
+      margin-bottom: 1rem;
+      user-select: none;
+    }
+    #invoiceHeader img {
+      width: 70px;
+      height: 70px;
+      object-fit: contain;
+      margin-bottom: 5px;
+    }
+    #cartItems {
+      height: 300px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      padding: 12px;
+      border-radius: 5px;
+      background-color: #fff;
+      margin-bottom: 15px;
+    }
+    .cart-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 12px;
+      gap: 12px;
+    }
+    .cart-item img {
       width: 60px;
       height: 60px;
       object-fit: contain;
       border: 1px solid #ddd;
       border-radius: 5px;
       background-color: #fff;
+      flex-shrink: 0;
     }
-    .cart-item input {
+    .cart-item-details {
+      flex-grow: 1;
+    }
+    .cart-item-details strong {
+      display: block;
+      font-size: 1rem;
+    }
+    .cart-item-details small {
+      color: #666;
+      font-size: 0.875rem;
+      margin-bottom: 6px;
+    }
+    .cart-item-qty input {
       width: 50px;
       text-align: center;
+      border-radius: 3px;
+      border: 1px solid #ccc;
+      padding: 2px 5px;
+    }
+    .btn-remove {
+      border: none;
+      background: none;
+      color: #dc3545;
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 0 5px;
+      line-height: 1;
     }
   </style>
 </head>
@@ -47,40 +152,63 @@
   <h4>POS System</h4>
   <hr />
   <ul class="nav flex-column">
-    <li><a href="dashboard.html" class="nav-link text-white"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
-    <li><a href="pos.html" class="nav-link text-white active"><i class="bi bi-receipt"></i> POS</a></li>
-    <li><a href="customer.html" class="nav-link "><i class="bi bi-people"></i> Customer</a></li>
-    <li><a href="category.html" class="nav-link text-white"><i class="bi bi-tags"></i> Category</a></li>
-    <li><a href="product.html" class="nav-link text-white"><i class="bi bi-box"></i> Product</a></li>
-    <li><a href="inventory.html" class="nav-link text-white"><i class="bi bi-archive"></i> Inventory</a></li>
-    <li><a href="report.html" class="nav-link text-white"><i class="bi bi-bar-chart"></i> Report</a></li>
-    <li><a href="profile.html" class="nav-link text-white"><i class="bi bi-person"></i> Profile</a></li>
-    <li><a href="register.html" class="nav-link text-white"><i class="bi bi-person-plus"></i> Register</a></li>
-    <li><a href="settings.html" class="nav-link text-white"><i class="bi bi-gear"></i> Settings</a></li>
+    <li><a href="dashboard.html" class="nav-link"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+    <li><a href="pos.html" class="nav-link active"><i class="bi bi-receipt"></i> POS</a></li>
+    <li><a href="customer.html" class="nav-link"><i class="bi bi-people"></i> Customer</a></li>
+    <li><a href="category.html" class="nav-link"><i class="bi bi-tags"></i> Category</a></li>
+    <li><a href="product.html" class="nav-link"><i class="bi bi-box"></i> Product</a></li>
+    <li><a href="inventory.html" class="nav-link"><i class="bi bi-archive"></i> Inventory</a></li>
+    <li><a href="report.html" class="nav-link"><i class="bi bi-bar-chart"></i> Report</a></li>
+    <li><a href="profile.html" class="nav-link"><i class="bi bi-person"></i> Profile</a></li>
+    <li><a href="register.html" class="nav-link"><i class="bi bi-person-plus"></i> Register</a></li>
+    <li><a href="settings.html" class="nav-link"><i class="bi bi-gear"></i> Settings</a></li>
   </ul>
   <hr />
   <button class="btn btn-danger w-100" id="logoutBtn">Logout</button>
 </div>
+
 <div id="content" class="container-fluid mt-3">
   <h2>Point Of Sale</h2>
   <div class="row">
-    <!-- Product List -->
-    <div class="col-md-8">
-      <h4 class="mb-3">🛍️ Products</h4>
+    <!-- Products Left -->
+    <div class="col-md-8" id="productSection">
+      <div id="productHeader">
+        <img src="/images/logo.png" alt="Mart Logo" />
+        <h4>Mart POS</h4>
+      </div>
+      <input
+              type="text"
+              id="searchInput"
+              class="form-control"
+              placeholder="Search products..."
+              oninput="filterProducts()"
+      />
       <div id="productList">
         <p>Loading products...</p>
       </div>
     </div>
 
-    <!-- POS Cart -->
-    <div class="col-md-4">
-      <h4 class="mb-3">🧾 POS Cart</h4>
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <div id="cartItems" class="mb-3">
+    <!-- Invoice Right -->
+    <div class="col-md-4" id="invoiceSection">
+      <div class="card shadow-sm h-100">
+        <div class="card-body d-flex flex-column">
+          <div id="invoiceHeader">
+            <img src="/images/logo.png" alt="POS Logo" />
+            <h4>🧾 Sales Invoice</h4>
+          </div>
+
+          <div class="mb-3">
+            <label for="customerSelect" class="form-label">Select Customer</label>
+            <select id="customerSelect" class="form-select">
+              <option value="">-- Walk-in Customer --</option>
+            </select>
+          </div>
+
+          <div id="cartItems" class="flex-grow-1">
             <p class="text-muted">No items in cart</p>
           </div>
-          <h5>Total: $<span id="totalPrice">0.00</span></h5>
+
+          <h5 class="mt-auto">Total: $<span id="totalPrice">0.00</span></h5>
           <button class="btn btn-success w-100 mt-3" onclick="checkout()">💵 Process Payment</button>
         </div>
       </div>
@@ -89,11 +217,12 @@
 </div>
 
 <script>
-  // TODO: replace with actual JWT token from your login/auth system
   const token = localStorage.getItem('token') || 'YOUR_JWT_TOKEN_HERE';
 
   let products = [];
+  let filteredProducts = [];
   const cart = [];
+  let customers = [];
 
   async function loadProducts() {
     try {
@@ -105,7 +234,7 @@
         throw new Error(`Error ${res.status}: ${errText}`);
       }
       products = await res.json();
-      window.products = products; // for addToCart to find products
+      filteredProducts = products;
       renderProducts();
     } catch (err) {
       console.error('Load products failed:', err);
@@ -113,33 +242,67 @@
     }
   }
 
+  async function loadCustomers() {
+    try {
+      const res = await fetch('/api/customers', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(`Error ${res.status}: ${errText}`);
+      }
+      customers = await res.json();
+      renderCustomers();
+    } catch (err) {
+      console.error('Load customers failed:', err);
+      const select = document.getElementById('customerSelect');
+      select.innerHTML = `<option value="">-- Walk-in Customer --</option><option disabled class="text-danger">Failed to load customers</option>`;
+    }
+  }
+
+  function renderCustomers() {
+    const select = document.getElementById('customerSelect');
+    select.innerHTML = '<option value="">-- Walk-in Customer --</option>';
+    customers.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.id;
+      opt.textContent = c.name;
+      select.appendChild(opt);
+    });
+  }
+
   function renderProducts() {
     const container = document.getElementById('productList');
-    if (!products.length) {
-      container.innerHTML = '<p>No products available.</p>';
+    if (!filteredProducts.length) {
+      container.innerHTML = '<p>No products found.</p>';
       return;
     }
-
     container.innerHTML = '';
-    products.forEach(p => {
+    filteredProducts.forEach(p => {
       const card = document.createElement('div');
       card.className = 'product-card';
       card.title = p.description || '';
       card.onclick = () => addToCart(p.id);
 
-      const imgSrc = p.imageUrl ? `/uploads/product-images/${p.imageUrl}` : 'https://via.placeholder.com/60?text=No+Img';
+      const imgSrc = p.imageUrl ? `/uploads/product-images/${p.imageUrl}` : 'https://via.placeholder.com/150?text=No+Img';
 
       card.innerHTML = `
-        <img src="${imgSrc}" alt="${p.name}" class="product-image" />
-        <div>
-          <strong>${p.name}</strong><br />
-          Price: $${p.price.toFixed(2)}<br />
-          Stock: ${p.stock}
-        </div>
-      `;
+          <img src="${imgSrc}" alt="${p.name}" class="product-image" />
+          <div class="product-info">
+            <strong>${p.name}</strong><br />
+            Price: $${p.price.toFixed(2)}<br />
+            Stock: ${p.stock}
+          </div>
+        `;
 
       container.appendChild(card);
     });
+  }
+
+  function filterProducts() {
+    const query = document.getElementById('searchInput').value.trim().toLowerCase();
+    filteredProducts = products.filter(p => p.name.toLowerCase().includes(query));
+    renderProducts();
   }
 
   function addToCart(productId) {
@@ -176,19 +339,22 @@
     cart.forEach((item, index) => {
       const itemTotal = item.price * item.quantity;
       total += itemTotal;
+
       const div = document.createElement('div');
-      div.className = 'cart-item mb-2 d-flex justify-content-between align-items-center';
+      div.className = 'cart-item';
       div.innerHTML = `
-        <div>
-          <strong>${item.name}</strong><br />
-          $${item.price.toFixed(2)} ×
-          <input type="number" value="${item.quantity}" min="1" max="${item.stock}" onchange="updateQty(${index}, this.value)" />
-        </div>
-        <div>
-          $${itemTotal.toFixed(2)}
-          <button class="btn btn-sm btn-danger ms-2" onclick="removeItem(${index})">×</button>
-        </div>
-      `;
+          <img src="${item.imageUrl ? `/uploads/product-images/${item.imageUrl}` : 'https://via.placeholder.com/60?text=No+Img'}" alt="${item.name}" />
+          <div class="cart-item-details">
+            <strong>${item.name}</strong>
+            <small>$${item.price.toFixed(2)} × </small>
+            <input type="number" value="${item.quantity}" min="1" max="${item.stock}" onchange="updateQty(${index}, this.value)" />
+          </div>
+          <div>
+            $${itemTotal.toFixed(2)}
+            <button class="btn-remove" onclick="removeItem(${index})" title="Remove item">&times;</button>
+          </div>
+        `;
+
       cartItems.appendChild(div);
     });
 
@@ -212,25 +378,120 @@
     renderCart();
   }
 
-  function checkout() {
-    if (cart.length === 0) {
-      alert('Cart is empty!');
-      return;
-    }
+  async function checkout() {
+    if (cart.length === 0) return alert('Cart is empty!');
+
+    const customerId = document.getElementById('customerSelect').value || null;
+    const customerName = customerId
+            ? customers.find(c => c.id == customerId)?.name
+            : 'Walk-in Customer';
 
     const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const summary = cart.map(i => `${i.name} x${i.quantity} = $${(i.price * i.quantity).toFixed(2)}`).join('\n');
 
-    alert(`✅ Payment Successful!\n\nItems:\n${summary}\n\nTotal: $${total.toFixed(2)}\n\n📌 You can now connect this to a backend POST /orders endpoint.`);
+    const { value: cash, isConfirmed } = await Swal.fire({
+      title: 'Enter cash received',
+      input: 'number',
+      inputLabel: `Total: $${total.toFixed(2)}`,
+      inputPlaceholder: 'Enter cash amount',
+      inputAttributes: { min: total, step: '0.01' },
+      showCancelButton: true
+    });
 
-    cart.length = 0;
-    renderCart();
+    const btn = document.querySelector('button.btn-success');
+    btn.disabled = true;
+
+    try {
+      const cashAmount = Number(cash);
+      const isCashValid = isConfirmed && !isNaN(cashAmount) && cashAmount >= total;
+
+      // Set status based on user confirmation
+      const orderPayload = {
+        totalPrice: total,
+        customerName,
+        createdBy: 1, // Replace with actual user ID logic
+        status: isCashValid ? 'PAID' : 'PENDING',
+        items: cart.map(item => ({
+          productId: item.id,
+          quantity: item.quantity,
+          price: item.price
+        }))
+      };
+
+      // Create order
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify(orderPayload)
+      });
+
+      if (!res.ok) throw new Error(await res.text());
+
+      const order = await res.json();
+      if (!order.orderId) throw new Error('Order ID missing in response');
+
+      if (!isCashValid) {
+        Swal.fire('Order saved as pending', 'No payment received yet.', 'info');
+        return;
+      }
+
+      // Proceed to payment only if confirmed and valid
+      const payRes = await fetch('/api/payments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify({
+          orderId: order.orderId,
+          amountReceived: cashAmount
+        })
+      });
+
+      if (!payRes.ok) throw new Error(await payRes.text());
+
+      // After successful payment:
+      Swal.fire('✅ Payment Success!', `Change: $${(cashAmount - total).toFixed(2)}`, 'success');
+
+      try {
+        const invoiceRes = await fetch(`/api/invoices/${order.orderId}/generate`, {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer ' + token
+          }
+        });
+        if (!invoiceRes.ok) {
+          const errText = await invoiceRes.text();
+          console.error('Invoice creation failed:', errText);
+        } else {
+          console.log('Invoice created successfully');
+        }
+      } catch (err) {
+        console.error('Invoice creation failed:', err);
+      }
+
+
+// Clear cart and reload products
+      cart.length = 0;
+      renderCart();
+      loadProducts();
+
+    } catch (err) {
+      Swal.fire('❌ Error', err.message, 'error');
+    } finally {
+      btn.disabled = false;
+    }
   }
 
-  // Load products on page load
+
+  // Load products and customers on page load
   loadProducts();
+  loadCustomers();
+
+
 </script>
 <script src="/js/sidebar.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 </body>
 </html>

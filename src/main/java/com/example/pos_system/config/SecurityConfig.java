@@ -49,7 +49,9 @@ public class SecurityConfig {
                                 "/api/categories/**",
                                 "/api/products/**",
                                 "/api/inventories/**",
-                                "/api/users/**"
+                                "/api/users/**",
+                                "/api/payments/**",
+                                "/api/invoices/**"
                         ).authenticated()
 
                         .anyRequest().authenticated()
