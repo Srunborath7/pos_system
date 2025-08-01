@@ -38,9 +38,13 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/", "/index.html", "/login.html", "/register.html", "/dashboard.html",
                                 "/customer.html", "/category.html", "/product.html", "/inventory.html",
-                                "/pos.html", "/settings.html",
+                                "/pos.html", "/settings.html","/logo.png",
                                 "/css/**", "/js/**", "/uploads/**", "/images/**",
-                                "/api/auth/**" // for login, register, token
+                                "/api/auth/**" ,
+                                "/api/products/**",
+                                "report.html",
+                                "/invoice/**",
+                                "/api/invoices/**","/api/roles/**","/api/users/register","/api/products/count","/api/orders/count"
                         ).permitAll()
 
                         // Secure API endpoints

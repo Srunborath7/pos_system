@@ -7,53 +7,53 @@ import com.example.pos_system.repository.InvoiceRepository;
 import com.example.pos_system.repository.OrderRepository;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class InvoiceService {
 
-    @Autowired
-    private InvoiceRepository invoiceRepository;
-    @Autowired
-    private OrderRepository orderRepository;
-    public void generateInvoice(Order order) throws Exception {
+    private final InvoiceRepository invoiceRepository;
+    private final OrderRepository orderRepository;
+
+    public void generateInvoice(Order order, double cashReceived, double changeReturned) throws Exception {
         Document doc = new Document();
 
         String folderPath = "invoice/";
         File folder = new File(folderPath);
         if (!folder.exists()) {
-            folder.mkdirs();  // create folder if it doesn't exist
+            folder.mkdirs();
         }
 
         String fileName = "invoice_" + order.getId() + ".pdf";
         String filePath = folderPath + fileName;
 
         PdfWriter.getInstance(doc, new FileOutputStream(filePath));
-
         doc.open();
 
         Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18);
         Font bodyFont = FontFactory.getFont(FontFactory.HELVETICA, 12);
-
-        // Title
+        Paragraph title = new Paragraph("Mini Mart", titleFont);
+        title.setAlignment(Element.ALIGN_CENTER);
+        doc.add(title);
         doc.add(new Paragraph("Invoice", titleFont));
         doc.add(new Paragraph(" "));
 
-        // Invoice Info
         doc.add(new Paragraph("Invoice ID: " + order.getId(), bodyFont));
         doc.add(new Paragraph("Date: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")), bodyFont));
         doc.add(new Paragraph("Customer: " + order.getCustomerName(), bodyFont));
         doc.add(new Paragraph("Seller: " + order.getCreatedBy().getUsername(), bodyFont));
         doc.add(new Paragraph(" "));
 
-        // Table Headers
-        PdfPTable table = new PdfPTable(4); // Product, Qty, Price, Subtotal
+        PdfPTable table = new PdfPTable(4);
         table.setWidthPercentage(100);
         table.setWidths(new float[]{3, 1, 1, 1});
 
@@ -65,7 +65,6 @@ public class InvoiceService {
             table.addCell(headerCell);
         }
 
-        // Order Items
         double total = 0;
         for (OrderItem item : order.getOrderItems()) {
             String productName = item.getProduct().getName();
@@ -83,19 +82,23 @@ public class InvoiceService {
         doc.add(table);
         doc.add(new Paragraph(" "));
 
-        // Subtotal and Total
         doc.add(new Paragraph("Subtotal: $" + String.format("%.2f", total), bodyFont));
         doc.add(new Paragraph("Total: $" + String.format("%.2f", total), titleFont));
+        doc.add(new Paragraph(" "));
+
+        doc.add(new Paragraph("Cash received: $" + String.format("%.2f", cashReceived), bodyFont));
+        doc.add(new Paragraph("Change returned: $" + String.format("%.2f", changeReturned), bodyFont));
 
         doc.close();
 
-        // Save to DB
         Invoice invoice = Invoice.builder()
                 .order(order)
-                .filePath(filePath)
+                .filePath(fileName) // just file name, keep it relative to "invoice/" folder
                 .customerName(order.getCustomerName())
                 .sellerName(order.getCreatedBy().getUsername())
                 .totalAmount(total)
+                .cashReceived(cashReceived)
+                .changeReturned(changeReturned)
                 .createdAt(LocalDateTime.now())
                 .createdBy(order.getCreatedBy())
                 .build();
@@ -103,14 +106,29 @@ public class InvoiceService {
         invoiceRepository.save(invoice);
     }
 
-    public void generateInvoicePdf(Long orderId) {
+    public void generateInvoicePdf(Long orderId, double cashReceived, double changeReturned) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found with id " + orderId));
         try {
-            generateInvoice(order);
+            generateInvoice(order, cashReceived, changeReturned);
         } catch (Exception e) {
             throw new RuntimeException("Failed to generate invoice for order " + orderId, e);
         }
     }
 
+    public List<Invoice> getAllInvoices() {
+        return invoiceRepository.findAll();
+    }
+
+    public Optional<Invoice> getInvoiceById(Long id) {
+        return invoiceRepository.findById(id);
+    }
+
+    public Invoice getInvoiceByOrderId(Long orderId) {
+        return invoiceRepository.findByOrderId(orderId).orElse(null);
+    }
+    public double getTotalAmount() {
+        Double total = invoiceRepository.getTotalRevenue();
+        return total != null ? total : 0.0;
+    }
 }

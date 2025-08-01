@@ -21,10 +21,35 @@ public class InventoryController {
         return ResponseEntity.ok(inventoryService.findAll());
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getById(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(inventoryService.findById(id));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @PostMapping
     public ResponseEntity<?> addInventory(@RequestBody InventoryRequest request) {
         try {
             Inventory inventory = inventoryService.addInventory(
+                    request.getProductId(),
+                    request.getQuantity(),
+                    request.getAction(),
+                    request.getDescription()
+            );
+            return ResponseEntity.ok(inventory);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateInventory(@PathVariable Long id, @RequestBody InventoryRequest request) {
+        try {
+            Inventory inventory = inventoryService.updateInventory(
+                    id,
                     request.getProductId(),
                     request.getQuantity(),
                     request.getAction(),

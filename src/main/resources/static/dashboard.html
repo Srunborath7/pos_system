@@ -39,12 +39,11 @@
     <ul class="nav flex-column">
         <li><a href="dashboard.html" class="nav-link text-white active"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
         <li><a href="pos.html" class="nav-link text-white"><i class="bi bi-receipt"></i> POS</a></li>
-        <li><a href="customer.html" class="nav-link"><i class="bi bi-people"></i> Customer</a></li>
-        <li><a href="category.html" class="nav-link "><i class="bi bi-tags"></i> Category</a></li>
+        <li><a href="customer.html" class="nav-link text-white"><i class="bi bi-people"></i> Customer</a></li>
+        <li><a href="category.html" class="nav-link text-white"><i class="bi bi-tags"></i> Category</a></li>
         <li><a href="product.html" class="nav-link text-white"><i class="bi bi-box"></i> Product</a></li>
         <li><a href="inventory.html" class="nav-link text-white"><i class="bi bi-archive"></i> Inventory</a></li>
         <li><a href="report.html" class="nav-link text-white"><i class="bi bi-bar-chart"></i> Report</a></li>
-        <li><a href="profile.html" class="nav-link text-white"><i class="bi bi-person"></i> Profile</a></li>
         <li><a href="register.html" class="nav-link text-white"><i class="bi bi-person-plus"></i> Register</a></li>
         <li><a href="settings.html" class="nav-link text-white"><i class="bi bi-gear"></i> Settings</a></li>
     </ul>
@@ -60,13 +59,31 @@
     <button id="sidebarToggle" class="btn btn-dark mb-3" aria-label="Toggle sidebar">☰ Menu</button>
 
     <h3>Welcome, <span id="username">User</span>!</h3>
-
-    <div class="mb-4">
-        <label for="token" class="form-label fw-bold">Your JWT Token:</label>
-        <textarea id="token" class="form-control" rows="4" readonly></textarea>
-    </div>
-
+<!--    <span id="userRoles"></span>-->
+    <input type="hidden" id="token" class="form-control" rows="4" readonly>
     <div id="dashboardContent" class="card p-4 shadow">
+        <div class="container row g-3 mt-3" style="display: flex;justify-content: center">
+            <div id="totalSaleBox" class="col-12 col-md-4 card text-white bg-success mb-3" style="max-width: 18rem;margin: 20px">
+                <div class="card-header">Total Sales</div>
+                <div class="card-body">
+                    <h5 class="card-title">$<span id="totalSaleAmount">0.00</span></h5>
+                </div>
+            </div>
+            <div id="totalProductBox" class="col-12 col-md-4 card text-white bg-primary mb-3" style="max-width: 18rem;margin: 20px">
+                <div class="card-header">Total Products</div>
+                <div class="card-body">
+                    <h5 class="card-title"><span id="totalProductCount">0</span></h5>
+                </div>
+            </div>
+            <div id="totalOrdersBox" class="col-12 col-md-4 card text-white bg-danger mb-3" style="max-width: 18rem;margin: 20px">
+                <div class="card-header">Total Orders</div>
+                <div class="card-body">
+                    <h5 class="card-title"><span id="orderCount">0</span></h5>
+                </div>
+            </div>
+        </div>
+
+
         <h4 class="mb-4">Customers</h4>
 
         <div class="row mb-3">
@@ -172,6 +189,50 @@
         const refreshBtn = document.getElementById('refreshBtn');
         refreshBtn.addEventListener('click', () => loadCustomers());
     });
+    async function loadTotalSales() {
+        try {
+            const response = await fetch('/api/invoices/total'); // Make sure your backend allows this request
+            if (!response.ok) throw new Error('Failed to fetch');
+
+            const totalAmount = await response.json();
+            document.getElementById('totalSaleAmount').innerText = totalAmount.toFixed(2);
+        } catch (err) {
+            console.error('Error:', err);
+            document.getElementById('totalSaleAmount').innerText = 'Error';
+        }
+    }
+    async function fetchProductCounts() {
+        try {
+            // Fetch total product count
+            const resTotal = await fetch('/api/products/count');
+            if (!resTotal.ok) throw new Error('Failed to fetch total product count');
+            const totalCount = await resTotal.json(); // assuming response is a number, or {count: ...}
+
+            // Update UI
+            document.getElementById('totalProductCount').textContent = typeof totalCount === 'number' ? totalCount : totalCount.count;
+
+        } catch (error) {
+            console.error(error);
+        }
+    }
+    async function fetchOrderCount() {
+        try {
+            const res = await fetch('/api/orders/count');
+            if (!res.ok) throw new Error('Failed to fetch order count');
+            const count = await res.json();
+            console.log('Total Orders:', count);
+            // Update your UI accordingly
+            document.getElementById('orderCount').textContent = count;
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    fetchOrderCount();
+
+    // Call on page load
+    loadTotalSales();
+    fetchProductCounts()
 </script>
 
 </body>

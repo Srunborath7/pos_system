@@ -34,4 +34,19 @@ public class PaymentController {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
+    @GetMapping
+    public ResponseEntity<?> getAllPayments() {
+        return ResponseEntity.ok(paymentService.getAllPayments());
+    }
+
+    // Get payment by ID
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getPaymentById(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(paymentService.getPaymentById(id));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
 }

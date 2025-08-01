@@ -25,12 +25,11 @@
   <ul class="nav flex-column">
     <li><a href="dashboard.html" class="nav-link text-white"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
     <li><a href="pos.html" class="nav-link text-white"><i class="bi bi-receipt"></i> POS</a></li>
-    <li><a href="customer.html" class="nav-link active"><i class="bi bi-people"></i> Customer</a></li>
+    <li><a href="customer.html" class="nav-link text-white"><i class="bi bi-people"></i> Customer</a></li>
     <li><a href="category.html" class="nav-link text-white"><i class="bi bi-tags"></i> Category</a></li>
-    <li><a href="product.html" class="nav-link text-white"><i class="bi bi-box"></i> Product</a></li>
+    <li><a href="product.html" class="nav-link active"><i class="bi bi-box"></i> Product</a></li>
     <li><a href="inventory.html" class="nav-link text-white"><i class="bi bi-archive"></i> Inventory</a></li>
     <li><a href="report.html" class="nav-link text-white"><i class="bi bi-bar-chart"></i> Report</a></li>
-    <li><a href="profile.html" class="nav-link text-white"><i class="bi bi-person"></i> Profile</a></li>
     <li><a href="register.html" class="nav-link text-white"><i class="bi bi-person-plus"></i> Register</a></li>
     <li><a href="settings.html" class="nav-link text-white"><i class="bi bi-gear"></i> Settings</a></li>
   </ul>
@@ -38,19 +37,20 @@
   <button class="btn btn-danger w-100" id="logoutBtn">Logout</button>
 </div>
 <div id="content" class="container mt-4">
-  <h2>Product Management</h2>
-
+  <h3>Dashboard | Product Management</h3>
   <form id="productForm" enctype="multipart/form-data" novalidate>
     <input type="hidden" id="productId" />
+    <div class="mb-3">
+      <label class="form-label">Image</label>
+      <input id="imageFile" type="file" accept="image/*" class="form-control" />
+      <img id="productImagePreview" src="#" alt="Image Preview" style="display:none" />
+    </div>
     <div class="mb-3">
       <label class="form-label">Name</label>
       <input id="name" type="text" class="form-control" required />
       <div class="invalid-feedback">Please enter product name.</div>
     </div>
-    <div class="mb-3">
-      <label class="form-label">Description</label>
-      <textarea id="description" class="form-control" rows="3"></textarea>
-    </div>
+
     <div class="mb-3">
       <label class="form-label">Price</label>
       <input id="price" type="number" step="0.01" class="form-control" required />
@@ -62,9 +62,8 @@
       <div class="invalid-feedback">Please select a category.</div>
     </div>
     <div class="mb-3">
-      <label class="form-label">Image</label>
-      <input id="imageFile" type="file" accept="image/*" class="form-control" />
-      <img id="productImagePreview" src="#" alt="Image Preview" style="display:none" />
+      <label class="form-label">Description</label>
+      <textarea id="description" class="form-control" rows="3"></textarea>
     </div>
     <button type="submit" class="btn btn-primary w-100">Save Product</button>
     <button type="button" id="resetBtn" class="btn btn-secondary w-100 mt-2">Reset</button>
@@ -76,7 +75,7 @@
   <table class="table table-bordered table-striped table-responsive">
     <thead class="table-dark">
     <tr>
-      <th>ID</th><th>Name</th><th>Description</th><th>Price</th><th>Category</th><th>Image</th><th>Created By</th><th>Actions</th>
+      <th>ID</th><th>Name</th><th>Image</th><th>Price</th><th>Category</th><th>Description</th><th>Created By</th><th>Actions</th>
     </tr>
     </thead>
     <tbody id="productTableBody">
@@ -122,10 +121,10 @@
         <tr>
           <td>${p.id}</td>
           <td>${p.name}</td>
-          <td>${p.description || ''}</td>
+         <td>${p.imageUrl ? `<img src="/uploads/product-images/${p.imageUrl}" alt="${p.name}" style="max-width:60px;max-height:60px;" />` : ''}</td>
           <td>${p.price.toFixed(2)}</td>
           <td>${p.category?.name || ''}</td>
-          <td>${p.imageUrl ? `<img src="/uploads/product-images/${p.imageUrl}" alt="${p.name}" style="max-width:60px;max-height:60px;" />` : ''}</td>
+          <td>${p.description || ''}</td>
           <td>${p.createdBy?.username || ''}</td>
           <td>
             <button class="btn btn-sm btn-primary edit-btn" data-id="${p.id}">Edit</button>

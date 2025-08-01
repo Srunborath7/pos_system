@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Report | Invoice</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Bootstrap CSS & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+    <link href="/css/style.css" rel="stylesheet" />
+
+    <!-- SweetAlert2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet" />
+</head>
+<body>
+
+<!-- Sidebar -->
+<div id="sidebar" aria-label="Sidebar navigation">
+    <h4>POS System</h4>
+    <hr />
+    <ul class="nav flex-column">
+        <li><a href="dashboard.html" class="nav-link text-white"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+        <li><a href="pos.html" class="nav-link text-white"><i class="bi bi-receipt"></i> POS</a></li>
+        <li><a href="customer.html" class="nav-link text-white"><i class="bi bi-people"></i> Customer</a></li>
+        <li><a href="category.html" class="nav-link text-white"><i class="bi bi-tags"></i> Category</a></li>
+        <li><a href="product.html" class="nav-link text-white"><i class="bi bi-box"></i> Product</a></li>
+        <li><a href="inventory.html" class="nav-link text-white"><i class="bi bi-archive"></i> Inventory</a></li>
+        <li><a href="report.html" class="nav-link text-white active"><i class="bi bi-bar-chart"></i> Report</a></li>
+        <li><a href="register.html" class="nav-link text-white"><i class="bi bi-person-plus"></i> Register</a></li>
+        <li><a href="settings.html" class="nav-link text-white"><i class="bi bi-gear"></i> Settings</a></li>
+    </ul>
+    <hr />
+    <button class="btn btn-danger w-100" id="logoutBtn">Logout</button>
+</div>
+
+<!-- Overlay -->
+<div id="sidebarOverlay"></div>
+
+<!-- Main content -->
+<div id="content">
+    <button id="sidebarToggle" aria-label="Toggle sidebar">☰ Menu</button>
+    <h3>Dashboard | Invoice Report</h3>
+    <div class="mb-3">
+        <label for="searchInvoiceId" class="form-label">Search Invoice by ID:</label>
+        <input type="number" id="searchInvoiceId" class="form-control" placeholder="Enter invoice ID" />
+        <button onclick="searchInvoiceById()" class="btn btn-primary mt-2">Search</button>
+    </div>
+
+    <h5>All Invoices</h5>
+    <table class="table table-bordered" id="invoiceTable">
+        <thead class="table-dark">
+        <tr>
+            <th>ID</th>
+            <th>Customer</th>
+            <th>Seller</th>
+            <th>Total</th>
+            <th>Cash</th>
+            <th>Return Cash</th>
+            <th>Created At</th>
+            <th>File</th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<script>
+    const token = localStorage.getItem('token'); // or your auth token
+
+    document.addEventListener('DOMContentLoaded', fetchAllInvoices);
+
+    function fetchAllInvoices() {
+        fetch('/api/invoices', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        })
+            .then(response => response.json())
+            .then(data => populateInvoiceTable(data))
+            .catch(error => console.error('Error fetching invoices:', error));
+    }
+
+    function populateInvoiceTable(invoices) {
+        const tbody = document.querySelector('#invoiceTable tbody');
+        tbody.innerHTML = '';
+        if (invoices.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center">No invoices found.</td></tr>`;
+            return;
+        }
+        invoices.forEach(inv => {
+            const row = `
+            <tr>
+                <td>${inv.id}</td>
+                <td>${inv.customerName}</td>
+                <td>${inv.sellerName}</td>
+                <td>$${inv.totalAmount.toFixed(2)}</td>
+                <td>$${inv.cashReceived.toFixed(2)}</td>
+                <td>$${inv.changeReturned.toFixed(2)}</td>
+                <td>${new Date(inv.createdAt).toLocaleString()}</td>
+                <td><a href="/invoice/${inv.filePath}" target="_blank" rel="noopener noreferrer">View PDF</a></td>
+            </tr>`;
+            tbody.innerHTML += row;
+        });
+    }
+
+    function searchInvoiceById() {
+        const id = document.getElementById('searchInvoiceId').value.trim();
+        if (!id) {
+            alert('Please enter an invoice ID.');
+            return;
+        }
+
+        fetch(`/api/invoices/${id}`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        })
+            .then(response => {
+                if (!response.ok) throw new Error('Invoice not found');
+                return response.json();
+            })
+            .then(invoice => populateInvoiceTable([invoice])) // Wrap single result in array
+            .catch(error => {
+                alert('Invoice not found.');
+                fetchAllInvoices();
+            });
+    }
+</script>
+
+<script src="/js/sidebar.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+
+</body>
+</html>

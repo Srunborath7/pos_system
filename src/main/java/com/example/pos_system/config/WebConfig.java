@@ -11,7 +11,9 @@ public class WebConfig implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/uploads/product-images/**")
                 .addResourceLocations("file:///E:/UP_Year_3_S2/Java spring boot/pos_system/uploads/product-images/");
+
+        registry.addResourceHandler("/invoice/**")
+                .addResourceLocations("file:///E:/UP_Year_3_S2/Java spring boot/pos_system/invoice/");
     }
-
-
 }
+

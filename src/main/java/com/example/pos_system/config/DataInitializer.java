@@ -23,7 +23,7 @@ public class DataInitializer {
     public CommandLineRunner init() {
         return args -> {
             // Step 1: Create default roles
-            List<String> roles = List.of("ROLE_ADMIN", "ROLE_MANAGER", "ROLE_USER");
+            List<String> roles = List.of("ROLE_ADMIN", "ROLE_MANAGER", "ROLE_SALE", "ROLE_INVENTORY_MANAGER");
             for (String roleName : roles) {
                 roleRepository.findByName(roleName)
                         .orElseGet(() -> roleRepository.save(new Role(null, roleName)));

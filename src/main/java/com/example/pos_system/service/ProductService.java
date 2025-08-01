@@ -78,4 +78,12 @@ public class ProductService {
 
         return newFileName;
     }
+    public long getTotalProductCount() {
+        return productRepository.count();
+    }
+
+    // Optional: count by category
+    public long getProductCountByCategory(Long categoryId) {
+        return productRepository.countByCategoryId(categoryId);
+    }
 }

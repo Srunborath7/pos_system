@@ -58,4 +58,14 @@ public class ProductController {
         productService.deleteProduct(id);
         return ResponseEntity.noContent().build();
     }
+    @GetMapping("/count")
+    public long getTotalProductCount() {
+        return productService.getTotalProductCount();
+    }
+
+    // Optional: count by category
+    @GetMapping("/count/category/{id}")
+    public long getProductCountByCategory(@PathVariable Long id) {
+        return productService.getProductCountByCategory(id);
+    }
 }

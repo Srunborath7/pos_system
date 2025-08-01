@@ -16,7 +16,10 @@ body {
     z-index: 1050;
     padding: 20px;
 }
-
+#sidebar a {
+    color: #fff;
+    margin-bottom: 10px;
+}
 #sidebar.open {
     transform: translateX(0);
 }

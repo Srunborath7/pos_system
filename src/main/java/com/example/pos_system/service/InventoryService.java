@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -22,26 +21,25 @@ public class InventoryService {
         return inventoryRepository.findAll();
     }
 
-    public Optional<Inventory> findById(Long id) {
-        return inventoryRepository.findById(id);
+    public Inventory findById(Long id) {
+        return inventoryRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Inventory not found with ID: " + id));
     }
 
     @Transactional
     public Inventory addInventory(Long productId, int quantity, Inventory.Action action, String description) {
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("Product not found with id: " + productId));
+                .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + productId));
 
-        // Update stock according to action
         int currentStock = product.getStock();
-        int newStock = currentStock;
-        if (action == Inventory.Action.IN) {
-            newStock = currentStock + quantity;
-        } else if (action == Inventory.Action.OUT) {
-            if (currentStock < quantity) {
-                throw new IllegalArgumentException("Insufficient stock to remove");
-            }
-            newStock = currentStock - quantity;
+        int newStock = action == Inventory.Action.IN
+                ? currentStock + quantity
+                : currentStock - quantity;
+
+        if (action == Inventory.Action.OUT && currentStock < quantity) {
+            throw new IllegalArgumentException("Insufficient stock to remove");
         }
+
         product.setStock(newStock);
         productRepository.save(product);
 
@@ -53,6 +51,23 @@ public class InventoryService {
                 .build();
 
         return inventoryRepository.save(inventory);
+    }
+
+    @Transactional
+    public Inventory updateInventory(Long id, Long productId, int quantity, Inventory.Action action, String description) {
+        Inventory existing = inventoryRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Inventory not found with ID: " + id));
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + productId));
+
+        // No stock re-calculation here for safety; handle with caution if enabling
+        existing.setProduct(product);
+        existing.setQuantity(quantity);
+        existing.setAction(action);
+        existing.setDescription(description);
+
+        return inventoryRepository.save(existing);
     }
 
     public void deleteInventory(Long id) {
